@@ -1,15 +1,15 @@
 const fs = require("fs");
 const crypto = require("crypto");
 const zlib = require("zlib");
-const object = require("./lib/object");
+const { createObject } = require("./lib/object");
 const { exec } = require("child_process");
 
 const GIT_DIRECTORY = ".jgit";
 const INDEX_FILE = `${GIT_DIRECTORY}/index`;
-const COMMIT_MESSAGE = `# Title
-#
-# Body
-`;
+// const COMMIT_MESSAGE = `# Title
+// #
+// # Body
+// `;
 
 function indexFiles() {
   let lines = fs.readFileSync(INDEX_FILE, "utf-8");
@@ -17,7 +17,7 @@ function indexFiles() {
 }
 
 function indexTree() {
-  let memo = {};
+  const memo = {};
   for (line of indexFiles()) {
     let [sha, path] = line.split(" ");
     let segments = path.split("/");
@@ -50,7 +50,7 @@ function buildTree(name, tree) {
       lines.push(`blob ${value} ${key}`);
     }
   }
-  object.createObject(sha, lines.join("\n"));
+  createObject(sha, lines.join("\n"));
   return sha;
 }
 
@@ -64,7 +64,7 @@ function buildCommit(tree, message) {
     .update(Date.now() + committer)
     .digest("hex");
   let lines = [`tree ${tree}`, `author ${committer}`, ``, message];
-  object.createObject(sha, lines.join("\n"));
+  createObject(sha, lines.join("\n"));
   return sha;
 }
 
@@ -81,8 +81,7 @@ function commit(message) {
   const root_sha = buildTree("root", indexTree());
   const commit_sha = buildCommit(root_sha, message);
   updateRef(commit_sha);
-  buildCommit(message);
-  fs.truncate(INDEX_FILE, () => {});
+  fs.truncateSync(INDEX_FILE, 0);
   return 0;
 }
 
