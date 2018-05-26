@@ -1,15 +1,8 @@
 const fs = require("fs");
-const crypto = require("crypto");
-const zlib = require("zlib");
 const object = require("./lib/object");
-const { exec } = require("child_process");
 
 const GIT_DIRECTORY = ".jgit";
 const INDEX_FILE = `${GIT_DIRECTORY}/index`;
-// const COMMIT_MESSAGE = `# Title
-// #
-// # Body
-// `;
 
 function indexTree() {
   const memo = {};
@@ -17,7 +10,7 @@ function indexTree() {
     let [sha, path] = line.split(" ");
     let segments = path.split("/");
 
-    var tree = segments.reduce((_memo, val) => {
+    segments.reduce((_memo, val) => {
       if (val == segments[segments.length - 1]) {
         _memo[segments[segments.length - 1]] = sha;
         return _memo;
@@ -28,6 +21,14 @@ function indexTree() {
     }, memo);
   }
   return memo;
+}
+
+function getCurrentCommit() {
+  const current_branch = fs.readFileSync(`${GIT_DIRECTORY}/HEAD`, "utf-8").split(" ")[1];
+  const ref_file = `${GIT_DIRECTORY}/${current_branch}`;
+  if (fs.existsSync(ref_file)) {
+    return fs.readFileSync(ref_file);
+  } else return null;
 }
 
 function buildTree(name, tree) {
@@ -46,11 +47,9 @@ function buildTree(name, tree) {
 }
 
 function buildCommit(tree, message) {
-  const commit_message_path = `${GIT_DIRECTORY}/COMMIT_EDITMSG`;
-  // exec(`echo "${COMMIT_MESSAGE}" > ${commit_message_path}`);
-  // exec(`$EDITOR ${commit_message_path} >/dev/tty`);
   const committer = "user";
-  let lines = [`tree ${tree}`, `author ${committer}`, ``, message];
+  const parent_commit = getCurrentCommit();
+  let lines = [`tree ${tree}`, `parent ${parent_commit}`, `author ${committer}`, ``, message];
 
   const sha = object.hashObject(lines.join("\n"));
   return sha;
@@ -69,7 +68,8 @@ function commit(message) {
   const root_sha = buildTree("root", indexTree());
   const commit_sha = buildCommit(root_sha, message);
   updateRef(commit_sha);
-  fs.truncateSync(INDEX_FILE, 0);
+  // fs.truncateSync(INDEX_FILE, 0);
+  console.log("committed to master");
   return 0;
 }
 
