@@ -1,7 +1,7 @@
 const fs = require("fs");
 const crypto = require("crypto");
 const zlib = require("zlib");
-const { createObject, readIndex } = require("./lib/object");
+const object = require("./lib/object");
 const { exec } = require("child_process");
 
 const GIT_DIRECTORY = ".jgit";
@@ -13,7 +13,7 @@ const INDEX_FILE = `${GIT_DIRECTORY}/index`;
 
 function indexTree() {
   const memo = {};
-  for (line of readIndex()) {
+  for (line of object.readIndex()) {
     let [sha, path] = line.split(" ");
     let segments = path.split("/");
 
@@ -31,10 +31,6 @@ function indexTree() {
 }
 
 function buildTree(name, tree) {
-  const sha = crypto
-    .createHash("sha1")
-    .update(Date.now() + name)
-    .digest("hex");
   let lines = [];
   for (const key of Object.keys(tree)) {
     let value = tree[key];
@@ -45,7 +41,7 @@ function buildTree(name, tree) {
       lines.push(`blob ${value} ${key}`);
     }
   }
-  createObject(sha, lines.join("\n"));
+  const sha = object.hashObject(lines.join("\n"));
   return sha;
 }
 
@@ -54,12 +50,9 @@ function buildCommit(tree, message) {
   // exec(`echo "${COMMIT_MESSAGE}" > ${commit_message_path}`);
   // exec(`$EDITOR ${commit_message_path} >/dev/tty`);
   const committer = "user";
-  const sha = crypto
-    .createHash("sha1")
-    .update(Date.now() + committer)
-    .digest("hex");
   let lines = [`tree ${tree}`, `author ${committer}`, ``, message];
-  createObject(sha, lines.join("\n"));
+
+  const sha = object.hashObject(lines.join("\n"));
   return sha;
 }
 
@@ -69,7 +62,7 @@ function updateRef(commit_sha) {
 }
 
 function commit(message) {
-  if (readIndex().length == 0) {
+  if (object.readIndex().length == 0) {
     console.log("Nothing to commit");
     return 1;
   }

@@ -1,6 +1,6 @@
 const walk = require("fs-walk");
 const fs = require("fs");
-const { indexFiles } = require("./lib/object");
+const object = require("./lib/object");
 
 function main(params) {
   const files = new Set();
@@ -10,7 +10,7 @@ function main(params) {
     files.add(filename);
   });
 
-  const index_files = indexFiles();
+  const index_files = object.indexFiles();
   const new_files = new Set([...files].filter(x => !new Set(index_files).has(x)));
   console.log("Staged files");
   console.log(index_files);

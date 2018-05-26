@@ -1,7 +1,7 @@
 const fs = require("fs");
 const crypto = require("crypto");
 const zlib = require("zlib");
-const { createObject } = require("./lib/object");
+const object = require("./lib/object");
 
 const GIT_DIRECTORY = ".jgit";
 const OBJECTS_DIRECTORY = `${GIT_DIRECTORY}/objects`;
@@ -25,13 +25,7 @@ function add(...params) {
     }
 
     let contents = fs.readFileSync(param);
-    let digest = crypto
-      .createHash("sha1")
-      .update(contents)
-      .digest("hex");
-    let blob = zlib.deflateSync(contents);
-
-    createObject(digest, blob);
+    object.hashObject(contents);
     fs.appendFileSync(INDEX_FILE, `${digest} ${param}\n`);
   }
 
