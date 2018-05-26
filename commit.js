@@ -1,7 +1,7 @@
 const fs = require("fs");
 const crypto = require("crypto");
 const zlib = require("zlib");
-const { createObject } = require("./lib/object");
+const { createObject, readIndex } = require("./lib/object");
 const { exec } = require("child_process");
 
 const GIT_DIRECTORY = ".jgit";
@@ -11,14 +11,9 @@ const INDEX_FILE = `${GIT_DIRECTORY}/index`;
 // # Body
 // `;
 
-function indexFiles() {
-  let lines = fs.readFileSync(INDEX_FILE, "utf-8");
-  return lines.split("\n");
-}
-
 function indexTree() {
   const memo = {};
-  for (line of indexFiles()) {
+  for (line of readIndex()) {
     let [sha, path] = line.split(" ");
     let segments = path.split("/");
 
@@ -74,7 +69,7 @@ function updateRef(commit_sha) {
 }
 
 function commit(message) {
-  if (indexFiles().length == 0) {
+  if (readIndex().length == 0) {
     console.log("Nothing to commit");
     return 1;
   }

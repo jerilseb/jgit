@@ -1,0 +1,29 @@
+{
+  "name": "jgit",
+  "version": "1.0.0",
+  "description": "Git implemented in javascript",
+  "main": "jgit",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jerilseb/jgit.git"
+  },
+  "keywords": [
+    "git"
+  ],
+  "author": "Jeril Sebastian",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jerilseb/jgit/issues"
+  },
+  "homepage": "https://github.com/jerilseb/jgit#readme",
+  "dependencies": {
+    "fs-walk": "0.0.2"
+  }
+}
